@@ -42,11 +42,15 @@ jobs:
       - name: Copy latest index JSON into frontend
         run: |
           mkdir -p frontend/public/data
-          latest=$(ls -1 data/cloudy_shiny_index_*.json 2>/dev/null | sort | tail -n 1 || echo "")
-          if [ -n "$latest" ]; then
-            cp "$latest" frontend/public/data/current_index.json
+          if [ -f website/data/current_index.json ]; then
+            cp website/data/current_index.json frontend/public/data/current_index.json
           else
-            echo '{"index_value":0,"sentiment":"Unknown","components":[]}' > frontend/public/data/current_index.json
+            latest=$(ls -1 data/cloudy_shiny_index_*.json 2>/dev/null | sort | tail -n 1 || echo "")
+            if [ -n "$latest" ]; then
+              cp "$latest" frontend/public/data/current_index.json
+            else
+              echo '{"index_value":0,"sentiment":"Unknown","components":[]}' > frontend/public/data/current_index.json
+            fi
           fi
 
       - name: Build frontend
