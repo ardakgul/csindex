@@ -1,0 +1,85 @@
+name: Build Data and Deploy (Scheduled)
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"  # every 30 minutes UTC
+  workflow_dispatch:
+  push:
+    paths:
+      - "scripts/**"
+      - ".github/workflows/pages-data-build.yml"
+      - "frontend/**"
+      - "cloudy_shiny_index.py"
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-data
+  cancel-in-progress: true
+
+jobs:
+  build-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+            fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements-prod.txt ]; then pip install -r requirements-prod.txt; elif [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Build index JSON artifacts
+        run: |
+          python scripts/build_index.py || echo "build_index.py exited with code $? (continuing to commit last good data)"
+          echo '--- current_index.json (head) ---'
+          head -c 400 data/current_index.json || true
+          echo '\n--- history.json size ---'
+          wc -c data/history.json || true
+      - name: Commit data artifacts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/current_index.json data/history.json data/health.json || true
+          if git diff --cached --quiet; then
+            echo "No data changes to commit"
+          else
+            git commit -m "data: update index and history [skip ci]"
+            git push
+          fi
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package.json
+      - name: Install frontend deps
+        working-directory: frontend
+        run: npm ci || npm install
+      - name: Copy data into frontend public folder
+        run: |
+          mkdir -p frontend/public/data
+          cp data/current_index.json frontend/public/data/current_index.json || true
+          cp data/history.json frontend/public/data/history.json || true
+          cp data/health.json frontend/public/data/health.json || true
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}/
+        run: npm run build
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

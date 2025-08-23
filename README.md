@@ -4,61 +4,58 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Status](https://img.shields.io/badge/Status-Active-brightgreen.svg)](https://github.com/ardakgul/cloudyandshiny)
 
-## Project Overview
+@@
+## Automated Data Updates (GitHub Pages)
+The scheduled workflow `.github/workflows/pages-data-build.yml` runs every 30 minutes (UTC) to:
+1. Execute `scripts/build_index.py` producing / refreshing:
+   - `data/current_index.json` (latest snapshot)
+   - `data/history.json` (append-only, minute-deduplicated series)
+   - `data/health.json` (diagnostics)
+2. Commit changed data files (skips commit when no diff to avoid loops)
+3. Bundle the fresh JSON into `frontend/public/data/` and build the static site
+4. Deploy to GitHub Pages.
 
-The **Cloudy&Shiny Index** is a global market sentiment indicator that analyzes multiple international financial markets. June 2025 revision introduces GDP-adjusted weights and consolidates sentiment into an internal news component. The index provides a unified view of global market conditions on a scale from 0-100.
+The frontend fetches `./data/*.json?t=<cacheBuster>` so browsers always see the latest values without stale caching; a `<meta http-equiv="Cache-Control" content="no-store" />` tag provides a secondary hint.
 
-**Purpose:** Exploration of international market correlations and sentiment analysis
-
----
-
-## What This Project Does
-
-This Python-based system:
-- Analyzes 12 market price components plus 1 sentiment component (13 total logical inputs)
-- Calculates technical indicators (moving averages, RSI) for each component
-- Combines market data with external sentiment indicators
-- Produces a single sentiment score (0-100) with descriptive classification
-- Updates in real-time during market hours
-
-### Key Features:
-
-1. **International Market Coverage**: Includes major markets from US, China, Japan, Hong Kong, Germany, France, and Turkey
-
-2. **Sentiment Classification**: 5-level system from "Extreme Cloudy" (0-24) to "Extreme Shiny" (75-100)
-
-3. **Weighted Approach**: GDP-adjusted weights reflecting economic size and market depth (see updated table below)
-
-4. **Real-Time Processing**: Fetches live market data and updates sentiment calculations
-
-## Technical Implementation
-
-### Core Calculation Formula
-
+### JSON Schemas
+`current_index.json`
 ```
-Cloudy&Shiny_Index = Σ(Weight_i × Score_i) / Σ(Active Weights)
+{
+  "timestamp": "2025-08-23T10:30:12+00:00",
+  "index_value": 57.83,
+  "sentiment": "Shiny",
+  "status": "ok",
+  "components": [ {"symbol": "SPY", "score": 63.2} ]
+}
 ```
-
-Where:
-- `Weight_i` = Pre-assigned weight for each market component
-- `Score_i` = Distance-based score calculated from technical indicators  
-All sentiment now captured through the internal news sentiment component (NEWS_SENTIMENT) with an explicit weight. A Reuters Business RSS feed and an optional DistilBERT sentiment model (transformers) enrich headline scoring (graceful fallback if model unavailable).
-
-### Distance-Based Scoring Method
-
-```python
-def distance_based_score(current, ma, max_deviation=0.20):
-    """
-    Calculate sentiment score based on price distance from moving average
-    """
-    diff_ratio = (current - ma) / ma
-    normalized_diff = diff_ratio / max_deviation
-    normalized_diff = max(-1, min(1, normalized_diff))
-    score = 50 + (normalized_diff * 50)
-    return score
+`history.json`
+```
+{ "series": [ {"timestamp": "2025-08-23T10:00:00+00:00", "index_value": 56.71} ] }
+```
+`health.json`
+```
+{
+  "last_run_utc": "2025-08-23T10:30:12+00:00",
+  "history_points": 120,
+  "current_value": 57.83,
+  "ok": true,
+  "message": "Updated index 57.83 with 120 history points"
+}
 ```
 
-This method converts price movements relative to moving averages into sentiment scores.
+### Local Dry Run
+```powershell
+python scripts\build_index.py
+python -m http.server 8000
+# Browse http://localhost:8000/data/current_index.json
+```
+
+### Debug Panel
+Append `?debug=1` to the dashboard URL to reveal `health.json` diagnostics.
+
+### Secrets
+No secret is required currently. If future data sources need credentials add them under repository Settings → Secrets and reference them inside the workflow.
+
 
 ## Market Components & GDP-Adjusted Weights (June 2025)
 
@@ -335,4 +332,55 @@ If unreachable from the user’s browser, the static JSON will still show the la
 python scripts/update_pages_data.py; git add frontend/public/data/current_index.json website/data/current_index.json; git commit -m "chore(data): refresh index"; git push
 ```
 
----
+## Automated Data Updates (GitHub Pages)
+A scheduled GitHub Actions workflow (`pages-data-build.yml`) runs every 30 minutes (UTC) to:
+1. Execute `scripts/build_index.py` producing/refreshing:
+   - `data/current_index.json`
+   - `data/history.json` (append-only by minute; deduplicated)
+   - `data/health.json` (diagnostics)
+2. Commit changed data files (skips commit if unchanged)
+3. Build the frontend (React + Vite) and deploy to GitHub Pages.
+
+### JSON Schemas
+current_index.json
+```
+{
+  "timestamp": "2025-08-23T10:30:12+00:00",
+  "index_value": 57.83,
+  "sentiment": "Shiny",
+  "status": "ok",
+  "components": [ {"symbol": "SPY", "score": 63.2}, ... ]
+}
+```
+
+history.json
+```
+{ "series": [ {"timestamp": "2025-08-23T10:00:00+00:00", "index_value": 56.71}, ... ] }
+```
+
+health.json
+```
+{
+  "last_run_utc": "2025-08-23T10:30:12+00:00",
+  "history_points": 120,
+  "current_value": 57.83,
+  "ok": true,
+  "message": "Updated index 57.83 with 120 history points"
+}
+```
+
+### Local Dry Run
+```powershell
+python scripts\build_index.py
+python -m http.server 8000
+# Open http://localhost:8000/frontend/dist (after build) or dev server; fetch ./data/*.json
+```
+
+### Debug Panel
+Append `?debug=1` to the dashboard URL to reveal health diagnostics (`health.json`).
+
+### Cache Busting
+Frontend appends a `t=timestamp` query string to JSON fetches ensuring the browser does not cache stale data. A `<meta http-equiv="Cache-Control" content="no-store" />` tag is also present as a fallback.
+
+### Secrets
+If future data sources require credentials, add them as repository secrets and reference them inside the workflow (currently no secret is required). Do **not** print secrets in logs.

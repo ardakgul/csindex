@@ -2,54 +2,38 @@ import React, { useEffect, useState } from 'react';
 import IndexGauge from '../components/IndexGauge.jsx';
 import HistoryChart from '../components/HistoryChart.jsx';
 
-const API_BASE = import.meta.env.VITE_API_BASE; // optional runtime API
-// Raw GitHub master JSON (always updated by scheduled workflow) fallback
-const DATA_URL = import.meta.env.VITE_DATA_URL || 'https://raw.githubusercontent.com/ardakgul/csindex/master/website/data/current_index.json';
-const STATIC_JSON = './data/current_index.json'; // legacy embedded snapshot
+const DEBUG = new URLSearchParams(window.location.search).get('debug') === '1';
 
 export default function Dashboard(){
   const [current,setCurrent]=useState(null);
   const [loading,setLoading]=useState(true);
-  const [prediction,setPrediction]=useState(null);
-  const [predError,setPredError]=useState(null);
+  const [health,setHealth]=useState(null);
 
-  useEffect(()=>{
-    async function load(){
-      // 1. Try live API if configured
-      if (API_BASE) {
-        try {
-          const r = await fetch(`${API_BASE}/index/current`, { cache: 'no-store' });
-          if (r.ok) {
-            const d = await r.json();
-            setCurrent(d); setLoading(false); return;
-          }
-        } catch(_) { /* ignore and fallback */ }
-      }
-      // 2. Fetch dynamic raw JSON (updates without redeploy)
-      try {
-        const rs = await fetch(DATA_URL + '?t=' + Date.now(), { cache: 'no-store' });
-        if (rs.ok) {
-            const d = await rs.json();
-            setCurrent(d); setLoading(false); return;
-        }
-      } catch(_) { /* ignore */ }
-      // 3. Fallback to embedded snapshot
-      try {
-        const rs2 = await fetch(STATIC_JSON + '?t=' + Date.now());
-        if (rs2.ok) {
-          const d = await rs2.json();
+  const load = async()=>{
+    const cacheBuster = 't=' + Date.now();
+    try {
+      const c = await fetch(`./data/current_index.json?${cacheBuster}`, { cache: 'no-store' });
+      if (c.ok) {
+        const d = await c.json();
+        if (d && typeof d.index_value === 'number' && d.status !== 'error') {
+          setCurrent(d);
+        } else {
+          // Keep existing current if value invalid; show fallback state
           setCurrent(d);
         }
-      } catch(_) { /* ignore */ }
-      setLoading(false);
-    }
-    load();
-    const id = setInterval(load, 5 * 60 * 1000); // refresh every 5 min on static host
-    return ()=> clearInterval(id);
-  },[]);
+      }
+    } catch(_) {}
+    try {
+      const h = await fetch(`./data/health.json?${cacheBuster}`, { cache: 'no-store' });
+      if (h.ok) setHealth(await h.json());
+    } catch(_) {}
+    setLoading(false);
+  };
 
   useEffect(()=>{
-    fetch(`${API_BASE}/model/predict`).then(r=> r.ok ? r.json(): Promise.reject(r.statusText)).then(p=> setPrediction(p)).catch(()=>{});
+    load();
+    const id = setInterval(load, 60*1000); // refresh every minute
+    return ()=> clearInterval(id);
   },[]);
 
   return (
@@ -59,39 +43,30 @@ export default function Dashboard(){
         <div className="text-sm text-neutral-400">Strategic Market Sentiment Dashboard</div>
       </header>
       {loading && <div>Loading...</div>}
+      {!loading && !current && <div className="text-red-400 text-sm">No data available (yet). First scheduled run may still be pending.</div>}
       {current && (
         <div className="grid md:grid-cols-3 gap-6">
           <IndexGauge value={current.index_value} sentiment={current.sentiment} />
           <div className="md:col-span-2 flex flex-col gap-6">
-            <HistoryChart apiBase={API_BASE} />
+            <HistoryChart />
             <div className="p-4 rounded-xl bg-neutral-900 border border-neutral-700">
               <div className="text-sm text-neutral-400 mb-2">Components</div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
                 {current.components?.map(c=> (
                   <div key={c.symbol} className="p-2 rounded bg-neutral-800/60 flex flex-col">
                     <span className="font-medium">{c.symbol}</span>
-                    <span className="text-neutral-400">{c.score.toFixed(1)}</span>
+                    <span className="text-neutral-400">{typeof c.score === 'number' ? c.score.toFixed(1) : '–'}</span>
                   </div>
                 ))}
+                {!current.components?.length && <div className="text-neutral-500 text-xs col-span-full">No component detail in static mode.</div>}
               </div>
             </div>
-            <div className="p-4 rounded-xl bg-neutral-900 border border-neutral-700">
-              <div className="text-sm text-neutral-400 mb-2">Predictions (Experimental)</div>
-              {!prediction && !predError && <div className="text-xs text-neutral-500">Training / loading model...</div>}
-              {predError && <div className="text-xs text-red-400">{predError}</div>}
-              {prediction && (
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <div className="text-neutral-400 text-xs uppercase">Next Hour</div>
-                    <div className="text-brand font-semibold">{prediction.next_hour?.toFixed(2)}</div>
-                  </div>
-                  <div>
-                    <div className="text-neutral-400 text-xs uppercase">Next Day</div>
-                    <div className="text-brand font-semibold">{prediction.next_day?.toFixed(2)}</div>
-                  </div>
-                </div>
-              )}
-            </div>
+            {DEBUG && (
+              <div className="p-4 rounded-xl bg-neutral-900 border border-neutral-700 text-xs font-mono whitespace-pre-wrap">
+                <div className="text-neutral-400 mb-2">Health Diagnostics</div>
+                {health ? JSON.stringify(health,null,2) : 'No health.json loaded'}
+              </div>
+            )}
           </div>
         </div>
       )}

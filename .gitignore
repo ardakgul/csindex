@@ -8,7 +8,7 @@ __pycache__/
 .env
 
 # Data snapshots (keep only website/static copy under website/data and frontend/public/data)
-data/
+# data/
 
 # Node / frontend
 frontend/node_modules/
