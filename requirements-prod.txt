@@ -1,0 +1,13 @@
+yfinance==0.2.64
+requests==2.32.4
+pandas==2.3.0
+numpy==2.1.3
+beautifulsoup4==4.13.4
+python-dateutil==2.9.0.post0
+pytz==2025.2
+colorama==0.4.6
+feedparser==6.0.11
+
+# Optional NLP (comment out if you don't need transformer sentiment)
+transformers==4.53.0  # optional
+torch==2.7.1          # optional (only if transformers used)

@@ -1,0 +1,58 @@
+name: Deploy Cloudy&Shiny Dashboard to GitHub Pages
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'frontend/**'
+      - 'website/data/current_index.json'
+      - '.github/workflows/deploy_pages.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      GHP_BASE: /${{ github.event.repository.name }}/
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package.json
+      - name: Install deps
+        working-directory: frontend
+        run: npm ci || npm install
+      - name: Copy static data
+        run: |
+          mkdir -p frontend/public/data
+          if [ -f website/data/current_index.json ]; then cp website/data/current_index.json frontend/public/data/current_index.json; else echo '{"index_value":0,"sentiment":"N/A","components":[]}' > frontend/public/data/current_index.json; fi
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

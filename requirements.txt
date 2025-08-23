@@ -1,0 +1,13 @@
+# Loose dev requirements (use requirements-prod.txt for pinned versions). Static-only (no API/DB).
+yfinance>=0.2.64
+requests>=2.32.0
+pandas>=2.3.0
+numpy>=2.1.0
+beautifulsoup4>=4.13.0
+python-dateutil>=2.9.0
+pytz>=2025.1
+colorama>=0.4.6
+feedparser>=6.0.11
+transformers>=4.53.0  # optional
+torch>=2.7.0          # optional
+

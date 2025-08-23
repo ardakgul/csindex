@@ -1,0 +1,27 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+.env
+
+# Data snapshots (keep only website/static copy under website/data and frontend/public/data)
+data/
+
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Cache
+*.cache
+
+# Model artifacts (if reintroduced later)
+models/
