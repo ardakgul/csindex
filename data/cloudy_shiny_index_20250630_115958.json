@@ -1,0 +1,302 @@
+{
+  "timestamp": "2025-06-30T08:59:58.089613+00:00",
+  "index_value": 63.92,
+  "base_index": 63.92,
+  "sentiment": "Shiny",
+  "components": [
+    {
+      "symbol": "SPY",
+      "name": "S&P 500",
+      "score": 67.16098381132707,
+      "weight": 0.12,
+      "contribution": 8.059318057359249,
+      "status": "Active",
+      "indicators": {
+        "current_price": 614.91,
+        "ma_5": 611.1179985351562,
+        "ma_20": 600.3264875488281,
+        "ma_50": 579.7515825683594,
+        "price_above_ma5": "True",
+        "price_above_ma20": "True",
+        "price_above_ma50": "True",
+        "volatility": 0.29024826330423953,
+        "rsi": 68.03087334790847,
+        "price_change_5d": 0.9223078321662158,
+        "volume_ratio": 1.104552884048597
+      },
+      "type": "equity"
+    },
+    {
+      "symbol": "QQQ",
+      "name": "NASDAQ 100",
+      "score": 71.5297495514029,
+      "weight": 0.12,
+      "contribution": 8.583569946168348,
+      "status": "Active",
+      "indicators": {
+        "current_price": 548.09,
+        "ma_5": 544.668,
+        "ma_20": 532.8897996826172,
+        "ma_50": 508.37616340332033,
+        "price_above_ma5": "True",
+        "price_above_ma20": "True",
+        "price_above_ma50": "True",
+        "volatility": 0.33675854367734265,
+        "rsi": 68.03242120007674,
+        "price_change_5d": 1.854203151569711,
+        "volume_ratio": 1.1388007160166875
+      },
+      "type": "equity"
+    },
+    {
+      "symbol": "000001.SS",
+      "name": "Shanghai Composite",
+      "score": 60.350101341514595,
+      "weight": 0.08,
+      "contribution": 4.828008107321168,
+      "status": "Active",
+      "indicators": {
+        "current_price": 3444.4255,
+        "ma_5": 3438.7290941406254,
+        "ma_20": 3396.818369726562,
+        "ma_50": 3359.1029240625003,
+        "price_above_ma5": "True",
+        "price_above_ma20": "True",
+        "price_above_ma50": "True",
+        "volatility": 0.15887946572907094,
+        "rsi": 62.688098536728056,
+        "price_change_5d": 3.6076059282748165,
+        "volume_ratio": 88.7111124867888
+      },
+      "type": "equity"
+    },
+    {
+      "symbol": "^N225",
+      "name": "Nikkei 225",
+      "score": 68.27049340082668,
+      "weight": 0.15,
+      "contribution": 10.240574010124002,
+      "status": "Active",
+      "indicators": {
+        "current_price": 40487.39,
+        "ma_5": 39591.077218750004,
+        "ma_20": 38507.6614921875,
+        "ma_50": 37450.804831249996,
+        "price_above_ma5": "True",
+        "price_above_ma20": "True",
+        "price_above_ma50": "True",
+        "volatility": 0.2998224575063818,
+        "rsi": 75.22096274968078,
+        "price_change_5d": 3.0990048762476334,
+        "volume_ratio": 0.0
+      },
+      "type": "equity"
+    },
+    {
+      "symbol": "^HSI",
+      "name": "Hang Seng",
+      "score": 57.58458631563875,
+      "weight": 0.06,
+      "contribution": 3.455075178938325,
+      "status": "Active",
+      "indicators": {
+        "current_price": 24072.28,
+        "ma_5": 24266.714203125,
+        "ma_20": 23952.405601562503,
+        "ma_50": 23273.119584375,
+        "price_above_ma5": "False",
+        "price_above_ma20": "True",
+        "price_above_ma50": "True",
+        "volatility": 0.31968213195258893,
+        "rsi": 48.6313559465074,
+        "price_change_5d": 4.767717655547236,
+        "volume_ratio": 0.0
+      },
+      "type": "equity"
+    },
+    {
+      "symbol": "^GDAXI",
+      "name": "DAX",
+      "score": 58.6965441821892,
+      "weight": 0.05,
+      "contribution": 2.9348272091094603,
+      "status": "Active",
+      "indicators": {
+        "current_price": 23995.04,
+        "ma_5": 23763.494328125,
+        "ma_20": 23767.029734375,
+        "ma_50": 23460.4656828125,
+        "price_above_ma5": "True",
+        "price_above_ma20": "True",
+        "price_above_ma50": "True",
+        "volatility": 0.24286054902560844,
+        "rsi": 50.13551896287348,
+        "price_change_5d": 7.530432159855746,
+        "volume_ratio": 0.0
+      },
+      "type": "equity"
+    },
+    {
+      "symbol": "^FCHI",
+      "name": "CAC 40",
+      "score": 52.48436616408313,
+      "weight": 0.04,
+      "contribution": 2.099374646563325,
+      "status": "Active",
+      "indicators": {
+        "current_price": 7690.65,
+        "ma_5": 7622.73205078125,
+        "ma_20": 7693.078544921875,
+        "ma_50": 7706.545021484376,
+        "price_above_ma5": "True",
+        "price_above_ma20": "False",
+        "price_above_ma50": "False",
+        "volatility": 0.20532989626259113,
+        "rsi": 42.17661719294159,
+        "price_change_5d": -5.317646289363592,
+        "volume_ratio": 0.0
+      },
+      "type": "equity"
+    },
+    {
+      "symbol": "XU100.IS",
+      "name": "BIST 100",
+      "score": 61.47822758785731,
+      "weight": 0.05,
+      "contribution": 3.073911379392866,
+      "status": "Active",
+      "indicators": {
+        "current_price": 9671.87,
+        "ma_5": 9449.054078125,
+        "ma_20": 9351.113470703125,
+        "ma_50": 9354.6273609375,
+        "price_above_ma5": "True",
+        "price_above_ma20": "True",
+        "price_above_ma50": "True",
+        "volatility": 0.3044381405597035,
+        "rsi": 50.37483331235507,
+        "price_change_5d": -2.0827895188193057,
+        "volume_ratio": 0.0
+      },
+      "type": "equity"
+    },
+    {
+      "symbol": "^VIX",
+      "name": "Volatility Index",
+      "score": 96.88335973311464,
+      "weight": 0.1,
+      "contribution": 9.688335973311466,
+      "status": "Active",
+      "indicators": {
+        "current_price": 17.1,
+        "ma_5": 16.849999923706054,
+        "ma_20": 18.233500175476074,
+        "ma_50": 20.841800033569335,
+        "price_above_ma5": "True",
+        "price_above_ma20": "False",
+        "price_above_ma50": "False",
+        "volatility": 1.7888101980107198,
+        "rsi": 49.80392207705818,
+        "price_change_5d": -11.991766693668616,
+        "volume_ratio": 1
+      },
+      "type": "volatility"
+    },
+    {
+      "symbol": "TLT",
+      "name": "US 20Y Treasury",
+      "score": 49.17417257166827,
+      "weight": 0.05,
+      "contribution": 2.458708628583414,
+      "status": "Active",
+      "indicators": {
+        "current_price": 87.39,
+        "ma_5": 87.52799999999999,
+        "ma_20": 86.44149974060059,
+        "ma_50": 86.4132443359375,
+        "price_above_ma5": "False",
+        "price_above_ma20": "True",
+        "price_above_ma50": "True",
+        "volatility": 0.14536602047688607,
+        "rsi": 64.31716654114572,
+        "price_change_5d": 0.47907181277094363,
+        "volume_ratio": 1.7963979237777623
+      },
+      "type": "bonds"
+    },
+    {
+      "symbol": "GLD",
+      "name": "Gold",
+      "score": 55.95009581811084,
+      "weight": 0.06,
+      "contribution": 3.35700574908665,
+      "status": "Active",
+      "indicators": {
+        "current_price": 301.22,
+        "ma_5": 304.50599951171876,
+        "ma_20": 308.69499963378905,
+        "ma_50": 306.05579892578123,
+        "price_above_ma5": "False",
+        "price_above_ma20": "False",
+        "price_above_ma50": "False",
+        "volatility": 0.2195543435592491,
+        "rsi": 40.63150722727116,
+        "price_change_5d": 11.212845933951117,
+        "volume_ratio": 1.1587203374321344
+      },
+      "type": "commodity"
+    },
+    {
+      "symbol": "DX-Y.NYB",
+      "name": "US Dollar Index",
+      "score": 42.83678752578975,
+      "weight": 0.04,
+      "contribution": 1.7134715010315902,
+      "status": "Active",
+      "indicators": {
+        "current_price": 97.208,
+        "ma_5": 97.45960079345703,
+        "ma_20": 98.37740019836426,
+        "ma_50": 99.25795974365234,
+        "price_above_ma5": "False",
+        "price_above_ma20": "False",
+        "price_above_ma50": "False",
+        "volatility": 0.09314969293271266,
+        "rsi": 31.928245760178086,
+        "price_change_5d": -5.961113072318054,
+        "volume_ratio": 1
+      },
+      "type": "currency"
+    },
+    {
+      "symbol": "NEWS_SENTIMENT",
+      "name": "News Sentiment",
+      "score": 51.61,
+      "weight": 0.08,
+      "contribution": 4.1288,
+      "status": "Active",
+      "indicators": {
+        "sentiment_strength": 0.04,
+        "sources_analyzed": 2,
+        "headlines_analyzed": 27
+      },
+      "type": "sentiment"
+    },
+    {
+      "symbol": "REUTERS_RSS",
+      "name": "Reuters Business RSS",
+      "score": 50,
+      "weight": 0.05,
+      "contribution": 2.5,
+      "status": "Active",
+      "indicators": {
+        "sentiment_strength": 0.0,
+        "headlines_analyzed": 0
+      },
+      "type": "sentiment"
+    }
+  ],
+  "calculation_time": 14.77,
+  "active_components": 14,
+  "total_components": 14
+}

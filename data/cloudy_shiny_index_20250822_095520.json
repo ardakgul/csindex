@@ -1,0 +1,181 @@
+{
+  "timestamp": "2025-08-22T06:55:20.653071+00:00",
+  "index_value": 57.28,
+  "base_index": 57.28,
+  "sentiment": "Shiny",
+  "components": [
+    {
+      "symbol": "SPY",
+      "name": "S&P 500",
+      "score": 54.32863200454026,
+      "weight": 0.159,
+      "contribution": 8.638252488721902,
+      "status": "Active",
+      "indicators": {
+        "current_price": 635.55,
+        "ma_50": 624.7330422363281
+      },
+      "type": "equity"
+    },
+    {
+      "symbol": "QQQ",
+      "name": "NASDAQ 100",
+      "score": 52.72735366537097,
+      "weight": 0.159,
+      "contribution": 8.383649232793985,
+      "status": "Active",
+      "indicators": {
+        "current_price": 563.28,
+        "ma_50": 557.2012604003907
+      },
+      "type": "equity"
+    },
+    {
+      "symbol": "000001.SS",
+      "name": "Shanghai Composite",
+      "score": 68.89131977707987,
+      "weight": 0.205,
+      "contribution": 14.122720554301372,
+      "status": "Active",
+      "indicators": {
+        "current_price": 3818.9604,
+        "ma_50": 3550.6542226484376
+      },
+      "type": "equity"
+    },
+    {
+      "symbol": "^N225",
+      "name": "Nikkei 225",
+      "score": 63.627254033390386,
+      "weight": 0.046,
+      "contribution": 2.9268536855359577,
+      "status": "Active",
+      "indicators": {
+        "current_price": 42633.29,
+        "ma_50": 40429.516815625
+      },
+      "type": "equity"
+    },
+    {
+      "symbol": "^HSI",
+      "name": "Hang Seng",
+      "score": 56.18607441512615,
+      "weight": 0.004,
+      "contribution": 0.2247442976605046,
+      "status": "Active",
+      "indicators": {
+        "current_price": 25233.46,
+        "ma_50": 24624.1526375
+      },
+      "type": "equity"
+    },
+    {
+      "symbol": "XU100.IS",
+      "name": "BIST 100",
+      "score": 74.0203198798325,
+      "weight": 0.012,
+      "contribution": 0.88824383855799,
+      "status": "Active",
+      "indicators": {
+        "current_price": 11313.9,
+        "ma_50": 10322.13596875
+      },
+      "type": "equity"
+    },
+    {
+      "symbol": "^GDAXI",
+      "name": "DAX",
+      "score": 53.04774399605276,
+      "weight": 0.051,
+      "contribution": 2.7054349437986907,
+      "status": "Active",
+      "indicators": {
+        "current_price": 24293.34,
+        "ma_50": 24000.7474640625
+      },
+      "type": "equity"
+    },
+    {
+      "symbol": "^FCHI",
+      "name": "CAC 40",
+      "score": 55.92003486784302,
+      "weight": 0.034,
+      "contribution": 1.901281185506663,
+      "status": "Active",
+      "indicators": {
+        "current_price": 7938.29,
+        "ma_50": 7754.658602734375
+      },
+      "type": "equity"
+    },
+    {
+      "symbol": "^VIX",
+      "name": "Volatility Index",
+      "score": 53.677036546070205,
+      "weight": 0.1,
+      "contribution": 5.367703654607021,
+      "status": "Active",
+      "indicators": {
+        "current_price": 16.6,
+        "ma_50": 16.84779990386963
+      },
+      "type": "volatility"
+    },
+    {
+      "symbol": "TLT",
+      "name": "US 20Y Treasury",
+      "score": 50.09891320453318,
+      "weight": 0.05,
+      "contribution": 2.5049456602266593,
+      "status": "Active",
+      "indicators": {
+        "current_price": 86.41,
+        "ma_50": 86.44420189208984
+      },
+      "type": "bonds"
+    },
+    {
+      "symbol": "GLD",
+      "name": "Gold",
+      "score": 50.956493865780445,
+      "weight": 0.06,
+      "contribution": 3.0573896319468266,
+      "status": "Active",
+      "indicators": {
+        "current_price": 307.29,
+        "ma_50": 308.4701994140625
+      },
+      "type": "commodity"
+    },
+    {
+      "symbol": "DX-Y.NYB",
+      "name": "US Dollar Index",
+      "score": 51.60872766441299,
+      "weight": 0.04,
+      "contribution": 2.0643491065765196,
+      "status": "Active",
+      "indicators": {
+        "current_price": 98.743,
+        "ma_50": 98.1116602319336
+      },
+      "type": "currency"
+    },
+    {
+      "symbol": "NEWS_SENTIMENT",
+      "name": "News Sentiment",
+      "score": 56.15,
+      "weight": 0.08,
+      "contribution": 4.492,
+      "status": "Active",
+      "indicators": {
+        "sentiment_strength": 0.154,
+        "sources_analyzed": 2,
+        "headlines_analyzed": 27
+      },
+      "type": "sentiment"
+    }
+  ],
+  "calculation_time": 9.18,
+  "active_components": 13,
+  "total_components": 13
+}
