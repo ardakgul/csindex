@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import IndexGauge from '../components/IndexGauge.jsx';
 import HistoryChart from '../components/HistoryChart.jsx';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
-const STATIC_JSON = './data/current_index.json'; // path in pages build
+const API_BASE = import.meta.env.VITE_API_BASE; // optional runtime API
+// Raw GitHub master JSON (always updated by scheduled workflow) fallback
+const DATA_URL = import.meta.env.VITE_DATA_URL || 'https://raw.githubusercontent.com/ardakgul/csindex/master/website/data/current_index.json';
+const STATIC_JSON = './data/current_index.json'; // legacy embedded snapshot
 
 export default function Dashboard(){
   const [current,setCurrent]=useState(null);
@@ -13,23 +15,33 @@ export default function Dashboard(){
 
   useEffect(()=>{
     async function load(){
-      try {
-        const r = await fetch(`${API_BASE}/index/current`, { cache: 'no-store' });
-        if(!r.ok) throw new Error('API unreachable');
-        const d = await r.json();
-        setCurrent(d); setLoading(false);
-      } catch(e){
-        // Fallback to static file (GitHub Pages)
+      // 1. Try live API if configured
+      if (API_BASE) {
         try {
-          const rs = await fetch(STATIC_JSON + '?t=' + Date.now());
-          if(rs.ok){
-            const d = await rs.json();
-            setCurrent(d); setLoading(false);
-          } else {
-            setLoading(false);
+          const r = await fetch(`${API_BASE}/index/current`, { cache: 'no-store' });
+          if (r.ok) {
+            const d = await r.json();
+            setCurrent(d); setLoading(false); return;
           }
-        } catch(_){ setLoading(false); }
+        } catch(_) { /* ignore and fallback */ }
       }
+      // 2. Fetch dynamic raw JSON (updates without redeploy)
+      try {
+        const rs = await fetch(DATA_URL + '?t=' + Date.now(), { cache: 'no-store' });
+        if (rs.ok) {
+            const d = await rs.json();
+            setCurrent(d); setLoading(false); return;
+        }
+      } catch(_) { /* ignore */ }
+      // 3. Fallback to embedded snapshot
+      try {
+        const rs2 = await fetch(STATIC_JSON + '?t=' + Date.now());
+        if (rs2.ok) {
+          const d = await rs2.json();
+          setCurrent(d);
+        }
+      } catch(_) { /* ignore */ }
+      setLoading(false);
     }
     load();
     const id = setInterval(load, 5 * 60 * 1000); // refresh every 5 min on static host
