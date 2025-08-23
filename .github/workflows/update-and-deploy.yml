@@ -52,6 +52,9 @@ jobs:
               echo '{"index_value":0,"sentiment":"Unknown","components":[]}' > frontend/public/data/current_index.json
             fi
           fi
+          echo '--- current_index.json (debug) ---'
+          cat frontend/public/data/current_index.json || true
+          echo '---------------------------------'
 
       - name: Build frontend
         working-directory: frontend
