@@ -8,13 +8,16 @@ on:
 jobs:
   update-score-and-deploy:
     permissions:
-      contents: write
+      contents: read
       pages: write
       id-token: write
     runs-on: ubuntu-latest
     concurrency:
       group: pages
       cancel-in-progress: true
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -51,6 +54,13 @@ jobs:
         env:
           BASE_PATH: /csindex/
         run: npm run build
+
+      - name: Verify build output
+        run: |
+          if [ ! -d "frontend/dist" ]; then
+            echo "frontend/dist not found" >&2
+            exit 1
+          fi
 
       - name: Commit and push changes
         run: |
