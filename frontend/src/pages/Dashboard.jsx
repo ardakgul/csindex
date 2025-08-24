@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import IndexGauge from '../components/IndexGauge.jsx';
 import HistoryChart from '../components/HistoryChart.jsx';
+import ComponentsTable from '../components/ComponentsTable.jsx';
+import NewsSentiment from '../components/NewsSentiment.jsx';
+import PredictionCard from '../components/PredictionCard.jsx';
+import StatCard from '../components/StatCard.jsx';
+import ComponentCard from '../components/ComponentCard.jsx';
 
 const DEBUG = new URLSearchParams(window.location.search).get('debug') === '1';
 
@@ -11,22 +16,33 @@ export default function Dashboard(){
 
   const load = async()=>{
     const cacheBuster = 't=' + Date.now();
-    try {
-      const c = await fetch(`./data/current_index.json?${cacheBuster}`, { cache: 'no-store' });
-      if (c.ok) {
-        const d = await c.json();
-        if (d && typeof d.index_value === 'number' && d.status !== 'error') {
-          setCurrent(d);
-        } else {
-          // Keep existing current if value invalid; show fallback state
-          setCurrent(d);
+    const apiBase = '/api/index';
+    const tryPaths = [
+      `${apiBase}/current?${cacheBuster}`,
+      `./data/current_index.json?${cacheBuster}` // static fallback
+    ];
+    for (const url of tryPaths){
+      try {
+        const r = await fetch(url, {cache:'no-store'});
+        if (r.ok){
+          const d = await r.json();
+            if (d && typeof d.index_value === 'number'){
+              setCurrent(d);
+              break;
+            }
         }
-      }
-    } catch(_) {}
+      } catch(_){/* continue */}
+    }
     try {
-      const h = await fetch(`./data/health.json?${cacheBuster}`, { cache: 'no-store' });
+      const h = await fetch(`/api/index/health?${cacheBuster}`, { cache: 'no-store' });
       if (h.ok) setHealth(await h.json());
-    } catch(_) {}
+    } catch(_){
+      // fallback static
+      try {
+        const h2 = await fetch(`./data/health.json?${cacheBuster}`, {cache:'no-store'});
+        if (h2.ok) setHealth(await h2.json());
+      } catch(_e){}
+    }
     setLoading(false);
   };
 
@@ -45,29 +61,38 @@ export default function Dashboard(){
       {loading && <div>Loading...</div>}
       {!loading && !current && <div className="text-red-400 text-sm">No data available (yet). First scheduled run may still be pending.</div>}
       {current && (
-        <div className="grid md:grid-cols-3 gap-6">
-          <IndexGauge value={current.index_value} sentiment={current.sentiment} />
-          <div className="md:col-span-2 flex flex-col gap-6">
-            <HistoryChart />
-            <div className="p-4 rounded-xl bg-neutral-900 border border-neutral-700">
-              <div className="text-sm text-neutral-400 mb-2">Components</div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
-                {current.components?.map(c=> (
-                  <div key={c.symbol} className="p-2 rounded bg-neutral-800/60 flex flex-col">
-                    <span className="font-medium">{c.symbol}</span>
-                    <span className="text-neutral-400">{typeof c.score === 'number' ? c.score.toFixed(1) : '–'}</span>
-                  </div>
-                ))}
-                {!current.components?.length && <div className="text-neutral-500 text-xs col-span-full">No component detail in static mode.</div>}
+        <div className="flex flex-col gap-8">
+          <div className="grid md:grid-cols-4 gap-6 items-start">
+            <div className="md:col-span-4 flex flex-col items-center gap-6 rounded-2xl bg-slate-900/70 border border-slate-700 p-8">
+              <IndexGauge value={current.index_value} sentiment={current.sentiment} />
+              <div className="w-full grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <StatCard label="News Sentiment" value={(() => { const n=current.components?.find(c=>c.symbol==='NEWS_SENTIMENT'); return n? n.score.toFixed(1): '—'; })()} />
+                <StatCard label="Active Components" value={current.active_components||current.components?.length} />
+                <StatCard label="Historical Points" value={current.history_points || '—'} />
+                <div className="rounded-xl bg-slate-800/60 border border-slate-700 p-2 flex flex-col justify-center"><PredictionCard /></div>
               </div>
             </div>
-            {DEBUG && (
-              <div className="p-4 rounded-xl bg-neutral-900 border border-neutral-700 text-xs font-mono whitespace-pre-wrap">
-                <div className="text-neutral-400 mb-2">Health Diagnostics</div>
-                {health ? JSON.stringify(health,null,2) : 'No health.json loaded'}
-              </div>
-            )}
           </div>
+          <div className="grid lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 flex flex-col gap-6">
+              <HistoryChart />
+              <NewsSentiment />
+            </div>
+            <div className="flex flex-col gap-4">
+              <div className="grid sm:grid-cols-2 gap-3">
+                {current.components?.filter(c=>c.symbol!=='NEWS_SENTIMENT').map(c=> <ComponentCard key={c.symbol} c={c} />)}
+              </div>
+              <div className="p-4 rounded-xl bg-neutral-900 border border-neutral-700 hidden">
+                <ComponentsTable components={current.components||[]} />
+              </div>
+            </div>
+          </div>
+          {DEBUG && (
+            <div className="p-4 rounded-xl bg-neutral-900 border border-neutral-700 text-xs font-mono whitespace-pre-wrap">
+              <div className="text-neutral-400 mb-2">Health Diagnostics</div>
+              {health ? JSON.stringify(health,null,2) : 'No health.json loaded'}
+            </div>
+          )}
         </div>
       )}
       <footer className="pt-10 text-center text-xs text-neutral-600">© {new Date().getFullYear()} Monarch Castle Technologies – Financial Intelligence Division</footer>

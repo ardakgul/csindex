@@ -10,9 +10,8 @@ import pytz
 import logging
 import sys
 import os
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Optional
 import time
-import threading
 from colorama import init, Fore, Style
 
 # Reuters Business RSS constant (requested)
@@ -123,7 +122,7 @@ class CloudyShinyIndexCalculator:
             # Sentiment Indicator (8% total weight)
             'NEWS_SENTIMENT': {'weight': 0.08, 'name': 'News Sentiment', 'type': 'sentiment', 'region': 'Global'}
         }
-        
+
         # Enhanced sentiment sources
         self.news_sources = [
             'https://finance.yahoo.com/news/',
@@ -350,18 +349,16 @@ class CloudyShinyIndexCalculator:
         
     def analyze_news_sentiment(self) -> Dict:
         """Enhanced news sentiment analysis with keyword + transformer blending when available."""
-        sentiment_scores = []
-        analyzed_headlines = []
+        sentiment_scores: List[float] = []
+        analyzed_headlines: List[str] = []
         total_headlines = 0
-        
-        # Enhanced sentiment keywords with scoring weights
+
         positive_keywords = {
             'strong': 3, 'surge': 4, 'soar': 4, 'rally': 3, 'boom': 4, 'breakout': 3,
             'gain': 2, 'rise': 2, 'up': 1, 'bull': 3, 'positive': 2, 'growth': 2,
             'advance': 2, 'jump': 3, 'climb': 2, 'recovery': 3, 'optimism': 3,
             'outperform': 3, 'beat': 2, 'exceed': 2, 'record': 2, 'high': 1
         }
-        
         negative_keywords = {
             'crash': 5, 'plunge': 4, 'collapse': 5, 'slump': 4, 'tumble': 4,
             'fall': 2, 'drop': 2, 'down': 1, 'bear': 3, 'negative': 2, 'decline': 2,
@@ -369,24 +366,15 @@ class CloudyShinyIndexCalculator:
             'risk': 2, 'loss': 2, 'miss': 2, 'disappoint': 3, 'warning': 3,
             'crisis': 4, 'recession': 4, 'inflation': 2
         }
-        
-        # Market-specific negative indicators
-        market_negative = {
+        negative_keywords.update({
             'sell-off': 4, 'correction': 3, 'volatility': 2, 'pressure': 2,
             'downturn': 3, 'retreat': 2, 'pullback': 2, 'slide': 2
-        }
-        
-        negative_keywords.update(market_negative)
-        
-        for source in self.news_sources[:3]:  # Analyze 3 sources for better coverage
+        })
+
+        for source in self.news_sources[:3]:
             try:
-                response = requests.get(source, timeout=15, headers={
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                })
-                
+                response = requests.get(source, timeout=15, headers={'User-Agent': 'Mozilla/5.0'})
                 soup = BeautifulSoup(response.content, 'html.parser')
-                
-                # Look for more specific selectors based on source
                 if 'yahoo.com' in source:
                     headlines = soup.find_all(['h3', 'h4'], class_=lambda x: x and ('title' in x.lower() or 'headline' in x.lower()), limit=15)
                 elif 'marketwatch.com' in source:
@@ -395,80 +383,53 @@ class CloudyShinyIndexCalculator:
                     headlines = soup.find_all(['h2', 'h3'], limit=15)
                 else:
                     headlines = soup.find_all(['h1', 'h2', 'h3'], limit=15)
-                
-                if not headlines:  # Fallback to broader search
+                if not headlines:
                     headlines = soup.find_all(['h1', 'h2', 'h3', 'h4'], limit=20)
-                
-                source_sentiment_scores = []
-                
+                source_sentiment_scores: List[float] = []
                 for headline in headlines:
                     text = headline.get_text().lower().strip()
-                    
-                    # Skip very short headlines or navigation items
                     if len(text) < 10 or any(skip in text for skip in ['menu', 'nav', 'subscribe', 'sign in']):
                         continue
-                    
                     total_headlines += 1
-                    analyzed_headlines.append(text[:100])  # Store first 100 chars for logging
-                    
-                    # Keyword sentiment
-                    pos_score = sum(weight for word, weight in positive_keywords.items() if word in text)
-                    neg_score = sum(weight for word, weight in negative_keywords.items() if word in text)
+                    analyzed_headlines.append(text[:140])
+                    pos_score = sum(w for word, w in positive_keywords.items() if word in text)
+                    neg_score = sum(w for word, w in negative_keywords.items() if word in text)
                     if pos_score == 0 and neg_score == 0:
                         keyword_sent = 50
                     else:
                         net = pos_score - neg_score
-                        if net > 0:
-                            keyword_sent = min(90, 50 + net * 5)
-                        else:
-                            keyword_sent = max(10, 50 + net * 5)
-
+                        keyword_sent = min(90, 50 + net * 5) if net > 0 else max(10, 50 + net * 5)
                     model_sent = self._model_sentiment_score(text)
-                    if model_sent is not None:
-                        headline_sentiment = 0.5 * keyword_sent + 0.5 * model_sent
-                    else:
-                        headline_sentiment = keyword_sent
-
+                    headline_sentiment = 0.5 * keyword_sent + 0.5 * model_sent if model_sent is not None else keyword_sent
                     source_sentiment_scores.append(headline_sentiment)
-                    
                 if source_sentiment_scores:
-                    # Weight recent headlines more heavily
                     source_avg = np.mean(source_sentiment_scores)
                     sentiment_scores.append(source_avg)
                     self.logger.info(f"Source sentiment from {source}: {source_avg:.1f} ({len(source_sentiment_scores)} headlines)")
-                        
             except Exception as e:
                 self.logger.error(f"Error analyzing sentiment from {source}: {e}")
                 continue
-        
-        # Calculate overall sentiment
+
         if sentiment_scores:
             overall_sentiment = np.mean(sentiment_scores)
-            
-            # Apply additional adjustments based on overall market context
-            if len(sentiment_scores) >= 2:  # If we have multiple sources
+            if len(sentiment_scores) >= 2:
                 sentiment_std = np.std(sentiment_scores)
-                if sentiment_std > 15:  # High disagreement between sources
-                    overall_sentiment = overall_sentiment * 0.9 + 50 * 0.1  # Pull toward neutral
-                    
+                if sentiment_std > 15:
+                    overall_sentiment = overall_sentiment * 0.9 + 5
         else:
-            overall_sentiment = 50  # Default neutral
-            
-        # Calculate sentiment strength for impact weighting
+            overall_sentiment = 50
         sentiment_deviation = abs(overall_sentiment - 50)
-        sentiment_strength = min(1.0, sentiment_deviation / 40)  # 0-1 scale
-        
+        sentiment_strength = min(1.0, sentiment_deviation / 40)
         result = {
             'score': round(overall_sentiment, 2),
             'strength': round(sentiment_strength, 3),
             'sources_analyzed': len(sentiment_scores),
             'headlines_analyzed': total_headlines,
-            'impact_weight': round(0.15 + (sentiment_strength * 0.10), 3)  # 15-25% impact based on strength
+            'impact_weight': round(0.15 + (sentiment_strength * 0.10), 3),
+            'sample_headlines': analyzed_headlines[:10]
         }
-        
         self.logger.info(f"News sentiment: {result['score']:.1f} (strength: {result['strength']:.2f}, impact: {result['impact_weight']:.1%})")
         self.logger.info(f"Analyzed {total_headlines} headlines from {len(sentiment_scores)} sources")
-        
         return result
         
     def calculate_component_score(self, symbol: str, component_info: Dict) -> Dict:
@@ -487,7 +448,8 @@ class CloudyShinyIndexCalculator:
                 'indicators': {
                     'sentiment_strength': news_sentiment['strength'],
                     'sources_analyzed': news_sentiment['sources_analyzed'],
-                    'headlines_analyzed': news_sentiment['headlines_analyzed']
+                    'headlines_analyzed': news_sentiment['headlines_analyzed'],
+                    'sample_headlines': news_sentiment.get('sample_headlines', [])
                 },
                 'type': component_info['type']
             }
@@ -619,7 +581,7 @@ class CloudyShinyIndexCalculator:
         return result
         
     def save_results(self, result: Dict):
-        """Save calculation results to multiple formats"""
+        """Save calculation results to multiple formats + rolling history & health"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
         # Save to CSV
@@ -653,10 +615,73 @@ class CloudyShinyIndexCalculator:
             json.dump(result, jsonfile, indent=2, default=str)
             
         # Update current data files
+        os.makedirs('website/data', exist_ok=True)
         with open('website/data/current_index.json', 'w') as f:
             json.dump(result, f, indent=2, default=str)
-            
-        self.logger.info(f"Results saved to {csv_filename} and {json_filename}")
+
+        # Rolling history (append & trim)
+        history_path = 'website/data/history.json'
+        history = {"series": []}
+        if os.path.exists(history_path):
+            try:
+                with open(history_path) as fh:
+                    history = json.load(fh) or {"series": []}
+            except Exception:
+                history = {"series": []}
+        history.setdefault('series', [])
+        history['series'].append({
+            'timestamp': result['timestamp'],
+            'index_value': result['index_value']
+        })
+        # keep last 500 points
+        history['series'] = history['series'][-500:]
+        with open(history_path, 'w') as fh:
+            json.dump(history, fh, indent=2)
+
+        # Health file
+        health = {
+            'last_run': result['timestamp'],
+            'active_components': result['active_components'],
+            'total_components': result['total_components'],
+            'calculation_time': result['calculation_time']
+        }
+        with open('website/data/health.json', 'w') as fh:
+            json.dump(health, fh, indent=2)
+
+        # News sentiment standalone file
+        news_component = next((c for c in result['components'] if c['symbol'] == 'NEWS_SENTIMENT'), None)
+        if news_component:
+            with open('website/data/news_sentiment.json', 'w') as fh:
+                json.dump(news_component['indicators'] | {'score': news_component['score']}, fh, indent=2)
+
+        # Copy current index into frontend public (dev convenience)
+        try:
+            os.makedirs('frontend/public/data', exist_ok=True)
+            # Copy files needed for static GitHub Pages dashboard
+            with open('frontend/public/data/current_index.json', 'w') as fpub:
+                json.dump({
+                    'timestamp': result['timestamp'],
+                    'index_value': result['index_value'],
+                    'sentiment': result['sentiment'],
+                    'components': result['components'],
+                    'active_components': result['active_components'],
+                    'total_components': result['total_components']
+                }, fpub, indent=2)
+            # history
+            if os.path.exists(history_path):
+                import shutil
+                shutil.copy2(history_path, 'frontend/public/data/history.json')
+            # health
+            if os.path.exists('website/data/health.json'):
+                import shutil
+                shutil.copy2('website/data/health.json', 'frontend/public/data/health.json')
+            # news sentiment
+            if os.path.exists('website/data/news_sentiment.json'):
+                import shutil
+                shutil.copy2('website/data/news_sentiment.json', 'frontend/public/data/news_sentiment.json')
+        except Exception:
+            pass
+        self.logger.info(f"Results saved to {csv_filename} and {json_filename}; history & health updated")
         return csv_filename, json_filename
 
 if __name__ == "__main__":

@@ -10,4 +10,6 @@ colorama>=0.4.6
 feedparser>=6.0.11
 transformers>=4.53.0  # optional
 torch>=2.7.0          # optional
+fastapi>=0.112.0
+uvicorn>=0.30.0
 

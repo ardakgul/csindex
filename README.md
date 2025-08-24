@@ -144,7 +144,7 @@ docker run -p 8000:8000 cloudy-index
 - `GET /health` – service status
 - `GET /index/current?force=true` – latest (re)calculated index
 - `GET /index/history?limit=50` – recent historical snapshots
-- `GET /model/predict` – placeholder prediction (to be replaced by ML model)
+- `GET /index/predict` – AR(p) autoregressive forecast (returns prediction + 95% CI)
 
 
 ### Usage
@@ -188,7 +188,7 @@ print(f"Sentiment: {result['sentiment']}")
 -- (Removed) External Fear & Greed adjustment
 
 ### Future Enhancements
-- Machine learning integration for improved prediction
+- Enhanced multistep forecasting (currently AR(p) single-step implemented)
 - Advanced natural language processing for news sentiment
 - Additional emerging markets
 - Mobile application
