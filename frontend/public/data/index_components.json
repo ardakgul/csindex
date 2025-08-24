@@ -1,0 +1,7 @@
+[
+  { "id":"market_breadth","name":"Market Breadth","score":62.1,"weight":0.08,"group":"Market" },
+  { "id":"onchain_activity","name":"On-chain Activity","score":55.4,"weight":0.07,"group":"On-chain" },
+  { "id":"macro_rates","name":"Macro Rates","score":43.2,"weight":0.10,"group":"Macro" },
+  { "id":"news_sentiment","name":"News Sentiment","score":64.9,"weight":0.06,"group":"Sentiment" },
+  { "id":"etf_flows","name":"ETF Flows","score":70.3,"weight":0.05,"group":"Flows" }
+]

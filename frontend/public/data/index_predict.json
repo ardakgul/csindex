@@ -1,0 +1,1 @@
+{ "forecast": [ { "t":"2025-08-24T08:00:00Z","yhat":59.2,"yhat_lower":55.1,"yhat_upper":63.7 }, { "t":"2025-08-24T09:00:00Z","yhat":60.1,"yhat_lower":56.0,"yhat_upper":64.4 }, { "t":"2025-08-24T10:00:00Z","yhat":60.5,"yhat_lower":56.2,"yhat_upper":64.9 } ], "meta": { "horizon":"24h","mape":0.041,"rmse":1.92, "last_trained_at":"2025-08-24T06:00:00Z" } }
